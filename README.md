@@ -123,9 +123,9 @@ Planned features for upcoming milestones include:
 
 ---
 
-## Author
+## Group 2
 
-Eva
+
 
 ---
 
