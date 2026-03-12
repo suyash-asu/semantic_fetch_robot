@@ -3,7 +3,7 @@ layout: page
 title: Milestone 1
 ---
 
-## Milestone 1 Goals
+## Goals
 
 - Create ROS2 package
 - Configure dependencies
