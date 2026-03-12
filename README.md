@@ -123,7 +123,7 @@ Planned features for upcoming milestones include:
 
 ---
 
-## Group 2
+## Group 2 Mobile Robotics
 
 ## License
 
