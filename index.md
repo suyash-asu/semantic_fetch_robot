@@ -10,7 +10,7 @@ title: Overview
     A ROS 2 mobile manipulation system that accepts a natural-language object request, navigates an indoor environment, locates the target using open-vocabulary vision, and physically retrieves it using a mounted robotic arm.
   </p>
   <div class="hero-meta">
-    <span class="meta-chip"><span class="icon">🤖</span> TurtleBot + OpenMANIPULATOR-X</span>
+    <span class="meta-chip">TurtleBot + OpenMANIPULATOR-X</span>
     <span class="meta-chip"> Gazebo Harmonic</span>
     <span class="meta-chip">Differential Drive</span>
     <span class="meta-chip">LiDAR + OAK-D RGB-D</span>
