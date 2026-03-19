@@ -127,7 +127,7 @@ The system follows a **Perception → Estimation → Planning → Actuation** fl
 
 ---
 
-## 9. Package Structure
+## 8. Package Structure
 
 The ROS 2 package is organized as follows:
 
