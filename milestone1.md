@@ -6,18 +6,25 @@ mermaid: true
 ---
 
 # Milestone 1: Proposal & Architecture
- 
-Semantic Fetch Robot Milestone 1 defines the initial system design and simulation setup for a ROS 2 mobile manipulator that can interpret natural-language fetch requests, navigate a warehouse-like environment, and retrieve the requested object.
+**Team:** Point Cloud Nine · RAS 598 · ASU
 
-**At a Glance**
+> Semantic Fetch Robot — Milestone 1 defines the full system design, simulation setup, and foundational ROS 2 package for a mobile manipulator that interprets natural-language fetch requests, navigates a warehouse-like environment, and retrieves the requested object.
 
-- **Goal.** Design and validate a semantic fetch pipeline in simulation.
-- **Environment.** Gazebo Harmonic depot warehouse world with a pre-built map.
-- **Robot.** TurtleBot4 base with an OpenMANIPULATOR-X arm and RGB-D + LiDAR sensing.
-- **Key Capabilities.** Semantic mapping, open-vocabulary object detection, mobile manipulation.
-- **Success Criteria.** ≥ 75% fetch success over 10 trials, no collisions, each run under 180 seconds.
+---
 
-**On This Page**
+## At a Glance
+
+| | |
+|---|---|
+| 🎯 **Goal** | Design and validate a semantic fetch pipeline in simulation |
+| 🌐 **Environment** | Gazebo Harmonic depot warehouse world with a pre-built map |
+| 🤖 **Robot** | TurtleBot4 base + OpenMANIPULATOR-X arm + RGB-D + LiDAR |
+| 🧠 **Key Capabilities** | Semantic mapping · Open-vocabulary detection · Mobile manipulation |
+| ✅ **Success Criteria** | ≥ 75% fetch success over 10 trials · No collisions · Each run ≤ 180 s |
+
+---
+
+## On This Page
 
 - [1. Mission Statement & Scope](#1-mission-statement--scope)
 - [2. Background & Prior Work](#2-background--prior-work)
@@ -27,54 +34,94 @@ Semantic Fetch Robot Milestone 1 defines the initial system design and simulatio
 - [6. Open-Source Stack & Build vs. Reuse Decisions](#6-open-source-stack--build-vs-reuse-decisions)
 - [7. High-Level System Architecture](#7-high-level-system-architecture)
 - [8. Package Structure](#8-package-structure)
+- [9. Milestone 1 Nodes](#9-milestone-1-nodes)
+- [10. Running Milestone 1](#10-running-milestone-1)
 
 ---
 
 ## 1. Mission Statement & Scope
 
-The **Semantic Fetch Robot** is a mobile manipulation system that connects natural-language commands from a human operator with autonomous robotic retrieval of items. When the operator issues a command such as *"fetch the red bottle"*, the robot must interpret the request, locate the target object, pick it up with its arm, and return it to the operator.
+The **Semantic Fetch Robot** is a mobile manipulation system that connects natural-language commands from a human operator with autonomous robotic retrieval of items. When the operator issues a command such as *"fetch the red bottle"*, the robot must:
 
-The robot operates in a structured indoor simulation environment that resembles a small warehouse. Within this space it performs end-to-end fetch behaviors that combine navigation, perception, and manipulation.
+1. **Interpret** the natural-language request into a structured goal
+2. **Locate** the target object using a semantic map and open-vocabulary vision
+3. **Navigate** autonomously through the warehouse environment
+4. **Pick up** the object using the mounted arm
+5. **Return** the object to the operator's starting position
 
-- **Environment.** The simulation takes place in a pre-generated TurtleBot world with shelving, walls, and corridors that approximate a warehouse. Gazebo's SDF model feature allows us to place objects at specific, repeatable locations.
-- **Primary problem.** Many indoor robots can either navigate or manipulate, but not both in a coordinated way. The Semantic Fetch Robot explicitly coordinates navigation and manipulation based on a semantic command, requiring tight integration of perception, mapping, planning, and control.
-- **Success criteria.** ≥ 75% object fetch success rate over 10 trials, no collisions, and each task completed within 180 seconds per run in a pre-mapped environment.
+### Environment
+
+The simulation takes place in a pre-generated TurtleBot4 depot world with shelving, walls, and corridors that approximate a real warehouse. Gazebo's SDF model feature allows objects to be placed at specific, repeatable locations — eliminating variability during early-milestone testing.
+
+### Primary Problem
+
+Many indoor robots can either navigate **or** manipulate, but not both in a coordinated, semantically-driven way. The Semantic Fetch Robot explicitly bridges this gap by coordinating navigation and manipulation in response to a free-text command — requiring tight integration of perception, mapping, planning, and control across a unified ROS 2 pipeline.
+
+### Success Criteria
+
+| Criterion | Target |
+|---|---|
+| Object fetch success rate | ≥ 75% over 10 trials |
+| Collision events | 0 per run |
+| Task completion time | ≤ 180 seconds per run |
+| Detection accuracy | ≥ 85% mAP @ IoU 0.5 |
+| Grasp success rate | ≥ 70% of pick attempts |
 
 ---
 
 ## 2. Background & Prior Work
 
-Our project sits at the intersection of three active research areas: semantic mapping, open-vocabulary object detection, and mobile manipulation. The following prior work shapes our design choices.
+Our project sits at the intersection of three active research areas: semantic mapping, open-vocabulary object detection, and mobile manipulation. The following prior work directly shapes our design choices.
 
-### Mobile Manipulation / Fetch Robots
+### 2.1 Mobile Manipulation & Fetch Robots
 
-The RoboCup@Home competition has driven the development of fetch-capable service robots for over a decade. Common architectures follow a map → localize → detect → plan → grasp pipeline, which we adopt. Prior work also shows that decoupling navigation from manipulation, with separate planners coordinated through a task layer, is typically more robust than tightly coupled controllers.
+The RoboCup@Home competition has driven fetch-capable service robot development for over a decade. Winning architectures consistently follow a:
 
-**Implication for our project.** We retain distinct navigation and arm planners, coordinated by a task-level fetch behavior.
+```
+map → localize → detect → plan → grasp
+```
 
-### Open-Vocabulary Object Detection
+pipeline — which we adopt directly. Prior work also shows that **decoupling navigation from manipulation**, with separate planners coordinated through a task layer, is significantly more robust than tightly coupled controllers.
 
-Traditional YOLO models rely on a fixed class list, limiting their usefulness when a user can request arbitrary objects. Recent open-vocabulary models address this. **CLIP** (Radford et al., OpenAI, 2021) demonstrated that aligning visual and textual embeddings enables zero-shot recognition of new classes. **YOLOWorld** (Cheng et al., 2024) integrates CLIP-style text encoders directly into the YOLO architecture, enabling open-vocabulary detection at real-time speeds suitable for embedded compute. The **OpenNav** framework (arxiv:2408.13936) combines YOLOWorld and MobileSAM in a ROS 2 pipeline for open-vocabulary 3D object detection tightly integrated with navigation.
+> **Implication for our project:** We retain distinct navigation and arm planners (Nav2 and MoveIt 2), coordinated by a task-level `fetch_command_node`.
 
-**Implication for our project.** We adopt YOLOWorld with a thin ROS 2 wrapper to support free-text object requests.
+---
 
-### Semantic Mapping
+### 2.2 Open-Vocabulary Object Detection
 
-ConceptGraphs (Gu et al., 2023) and DualMap (2025) demonstrate how to lift 2D image detections into 3D and maintain a queryable map of objects. DualMap, in particular, implements this idea in a ROS 2 pipeline using a wheeled robot with LiDAR and RGB-D sensing, which closely matches our hardware setup.
+Traditional YOLO models rely on a fixed class list — a fundamental limitation when a user can request arbitrary objects. Recent models address this:
 
-**Implication for our project.** We follow a similar pattern and maintain a semantic object registry that can be queried by label and pose.
+| Model | Contribution | Relevance |
+|---|---|---|
+| **CLIP** (OpenAI, 2021) | Aligns visual and textual embeddings for zero-shot recognition | Theoretical foundation for text-driven detection |
+| **YOLOWorld** (2024) | Integrates CLIP-style text encoders into YOLO — real-time open-vocabulary detection | **Primary detector in our pipeline** |
+| **OpenNav** (arXiv:2408.13936) | Combines YOLOWorld + MobileSAM in a ROS 2 pipeline for 3D open-vocabulary detection | Closest prior work to our full system |
 
-### SLAM & Navigation
+> **Implication for our project:** We adopt YOLOWorld with a thin ROS 2 wrapper (`vision_node.py`) to support free-text object requests without retraining.
 
-For 2D mapping, SLAM Toolbox is the official ROS 2 SLAM package. For navigation, Nav2 provides an action server, layered costmaps, and recovery behaviors. Both packages have been tested extensively with the TurtleBot simulator and are well-supported in ROS 2 Jazzy.
+---
 
-**Implication for our project.** We reuse SLAM Toolbox and Nav2 with minimal customization for the depot world.
+### 2.3 Semantic Mapping
 
-### MoveIt 2 for Arm Control
+ConceptGraphs (Gu et al., 2023) and DualMap (2025) demonstrate how to lift 2D image detections into 3D and maintain a queryable semantic map. DualMap, in particular, implements this in a ROS 2 pipeline with a wheeled robot using LiDAR and RGB-D — closely matching our setup.
+
+> **Implication for our project:** We follow a similar pattern: a custom `semantic_map_server` node maintains a confidence-weighted, queryable object registry layered on top of the SLAM occupancy grid.
+
+---
+
+### 2.4 SLAM & Navigation
+
+SLAM Toolbox is the official ROS 2 SLAM package; Nav2 provides the action server, layered costmaps, and recovery behaviors. Both are extensively tested with TurtleBot simulators and fully supported in ROS 2 Jazzy.
+
+> **Implication for our project:** Reuse SLAM Toolbox and Nav2 with minimal configuration for the depot world.
+
+---
+
+### 2.5 MoveIt 2 for Arm Control
 
 MoveIt 2 is the standard ROS 2 motion planning framework. The `open_manipulator_x_moveit_config` package (ROBOTIS) provides a pre-built configuration for the OpenMANIPULATOR-X, including URDF, SRDF, joint limits, and IK solver setup.
 
-**Implication for our project.** We reuse the existing MoveIt 2 configuration to avoid re-deriving kinematics and planning parameters.
+> **Implication for our project:** Reuse the existing MoveIt 2 configuration to avoid re-deriving kinematics and planning parameters from scratch.
 
 ---
 
@@ -82,53 +129,76 @@ MoveIt 2 is the standard ROS 2 motion planning framework. The `open_manipulator_
 
 | Parameter | Value |
 |---|---|
-| **Robot Platform** | TurtleBot4 |
-| **Mounted Arm** | OpenMANIPULATOR-X (4-DOF + gripper, DYNAMIXEL XM430) |
-| **Kinematic Model (Base)** | Differential drive (iRobot Create 3) |
-| **Kinematic Model (Arm)** | Serial chain, 4 revolute joints + parallel gripper |
-| **Sensors** | OAK-D Spatial AI stereo camera, RPLIDAR A1 2D LiDAR, IMU |
+| **Robot Platform** | TurtleBot4 (iRobot Create 3) |
+| **Mounted Arm** | OpenMANIPULATOR-X — 4-DOF + gripper (DYNAMIXEL XM430) |
+| **Kinematic Model — Base** | Differential drive |
+| **Kinematic Model — Arm** | Serial chain, 4 revolute joints + parallel gripper |
+| **Arm Max Reach** | ~390 mm from base link |
+| **Arm Max Payload** | ~500 g |
+| **Primary Sensors** | OAK-D Spatial AI Stereo Camera · RPLIDAR A1 2D LiDAR · IMU |
 | **Simulator** | Gazebo Harmonic (`gz-harmonic`) |
-| **Simulation World** | `depot.sdf` (TurtleBot4 default depot warehouse world) |
+| **Simulation World** | `depot.sdf` — TurtleBot4 default depot warehouse world |
 | **ROS Version** | ROS 2 Jazzy Jalisco |
 | **OS** | Ubuntu 24.04 LTS |
+| **Detection Model** | YOLOWorld-L (primary) · CLIP ViT-B/32 (fallback re-ranker) |
+| **Navigation Stack** | Nav2 + SLAM Toolbox |
+| **Motion Planner** | MoveIt 2 + OMPL (RRTConnect) |
+| **Target Detection Speed** | ≥ 10 FPS on host CPU |
 
 ---
 
 ## 4. Simulation Environment
 
-We use **Gazebo Harmonic** (`gz-harmonic`), the officially supported simulator for ROS 2 Jazzy and the TurtleBot4 platform. The TurtleBot simulator package (`ros-jazzy-turtlebot4-simulator`) ships with built-in support for Gazebo Harmonic and provides an out-of-the-box simulation launch for SLAM, Nav2, and RViz.
+We use **Gazebo Harmonic** (`gz-harmonic`), the officially supported simulator for ROS 2 Jazzy and the TurtleBot4 platform. The `ros-jazzy-turtlebot4-simulator` package ships with out-of-the-box launch support for SLAM, Nav2, and RViz.
 
-To run the baseline simulation:
+### Launch Baseline Simulation
 
 ```bash
 sudo apt install gz-harmonic ros-jazzy-turtlebot4-simulator
+
 ros2 launch turtlebot4_gz_bringup turtlebot4_gz.launch.py \
     slam:=true nav2:=true rviz:=true
 ```
 
-**Chosen World: `depot.sdf`.** This is the default TurtleBot4 depot warehouse world. It was selected because:
-- It ships pre-built with `turtlebot4-simulator`, avoiding custom world authoring.
-- A pre-built map (`depot.yaml`) is available, enabling Nav2 localization from day one.
-- The warehouse layout (corridors, open shelving areas) is representative of real service-robot environments.
-- The map is large enough to make navigation non-trivial but small enough to run on a single development machine.
+### Why `depot.sdf`?
 
-**Object placement.** Target objects (bottles, cans, small boxes from the Gazebo Fuel model database) are spawned at fixed, known locations using SDF `<include>` tags. This eliminates random placement variability for early milestones and simplifies debugging. In Milestone 3, we will introduce varied placement patterns to test robustness.
+| Reason | Detail |
+|---|---|
+| Ships pre-built | No custom world authoring — available immediately with `turtlebot4-simulator` |
+| Pre-built map | `depot.yaml` enables Nav2 localization from day one; no per-run mapping phase |
+| Representative layout | Corridors + open shelving areas match real service-robot environments |
+| Right scale | Large enough for non-trivial navigation; small enough for a single dev machine |
+
+### Object Placement Strategy
+
+| Milestone | Strategy | Rationale |
+|---|---|---|
+| M1 – M2 | Fixed SDF `<include>` locations | Eliminate variability; focus on pipeline integration |
+| M3 – M4 | Varied positions within defined zones | Begin robustness testing |
+| M5 – M6 | Randomized positions + orientations + partial occlusion | Full robustness validation |
+
+Target objects (bottles, cans, small boxes) are sourced from the Gazebo Fuel model database and spawned via SDF `<include>` tags.
 
 ---
 
 ## 5. Robot Arm Integration
 
-**Platform compatibility note.** The OpenMANIPULATOR-X is natively designed for TurtleBot3 (Waffle/Waffle Pi). TurtleBot4 uses a different base (iRobot Create 3) and does not ship with an official combined URDF for TB4 + OpenMANIPULATOR-X.
+### Platform Compatibility Note
 
-**URDF integration strategy.** We compose a combined robot description by:
+The OpenMANIPULATOR-X is natively designed for TurtleBot3 (Waffle/Waffle Pi). TurtleBot4 uses the iRobot Create 3 base and does **not** ship with an official combined URDF for TB4 + OpenMANIPULATOR-X. We compose one.
 
-- Extending the TurtleBot4 URDF using a `<xacro:include>` for the OpenMANIPULATOR-X description from the `open_manipulator_x_description` package.
-- Attaching the arm to the TurtleBot4 top mounting plate via a fixed joint.
-- Tuning the joint origin offset to match the physical mounting position.
+### URDF Integration Strategy
 
-This mirrors the composition pattern used in the TurtleBot3 manipulation packages.
+```
+TurtleBot4 base URDF
+    └── <xacro:include> open_manipulator_x_description
+            └── fixed joint → TurtleBot4 top mounting plate
+                    └── origin offset tuned to physical mount position
+```
 
-**Key packages used**
+This mirrors the composition pattern used in the TurtleBot3 manipulation packages and keeps our robot description modular — the arm URDF can be swapped independently of the base.
+
+### Key Packages
 
 | Package | Source | Purpose |
 |---|---|---|
@@ -138,68 +208,114 @@ This mirrors the composition pattern used in the TurtleBot3 manipulation package
 | `ros2_control` | apt | Hardware abstraction layer for arm joints |
 | `moveit2` | `ros-jazzy-moveit` | Motion planning framework |
 
-**Simulation arm control.** In Gazebo Harmonic, arm joints are controlled via the `ros2_control` Gazebo plugin using a `JointTrajectoryController`. The MoveIt 2 `moveit_gazebo.launch.py` from `open_manipulator_x_moveit_config` launches the planning context and bridges it to the simulation controllers. Grasp execution uses MoveIt's `MoveGroupInterface` to plan and execute a pre-computed approach and grasp trajectory.
+### Simulation Arm Control
 
-**Grasp pose estimation.** The OAK-D camera provides both RGB and registered depth. After the object detector produces a 2D bounding box, we project the centroid pixel through the depth map to obtain a 3D point in the camera frame. This 3D point is transformed to the `base_link` frame using `tf2` and used as the target for a top-down grasp pose. MoveIt 2 solves IK for the approach and grasp configurations.
+In Gazebo Harmonic, arm joints are controlled via the `ros2_control` Gazebo plugin using a `JointTrajectoryController`. The MoveIt 2 `moveit_gazebo.launch.py` from `open_manipulator_x_moveit_config` launches the planning context and bridges it to the simulation controllers. Grasp execution uses MoveIt's `MoveGroupInterface` to plan and execute the approach and grasp trajectory.
+
+### Grasp Pose Estimation
+
+```
+OAK-D RGB frame → YOLOWorld → 2D bounding box
+                                     │
+                              centroid pixel
+                                     │
+                              OAK-D depth map → 3D point in camera_frame
+                                                        │
+                                                   tf2 transform
+                                                        │
+                                             3D point in base_link frame
+                                                        │
+                                             top-down grasp pose → MoveIt 2 IK
+```
 
 ---
 
 ## 6. Open-Source Stack & Build vs. Reuse Decisions
 
-Our guiding principle is to **reuse well-maintained open-source packages wherever possible** and implement custom code only where integration or new functionality is required.
+Our guiding principle: **reuse well-maintained open-source packages wherever possible. Write custom code only where integration or new functionality is required.**
 
-Legend:
-- **Reuse** — use as-is with configuration only.
-- **Reuse (wrap)** — use as-is behind a thin custom wrapper.
-- **Custom** — implement from scratch for this project.
-
-| Capability | Chosen Open-Source Package | Decision | Rationale |
+| Capability | Package | Decision | Rationale |
 |---|---|---|---|
-| SLAM / Mapping | `slam_toolbox` (ROS 2 Jazzy) | **Reuse** | Ships with TurtleBot, stable and well-documented |
-| EKF Localization | `robot_localization` | **Reuse** | Industry standard for mobile-robot sensor fusion |
-| Navigation | `nav2` | **Reuse** | Standard ROS 2 navigation stack |
-| Object Detection | YOLOWorld (`ultralytics`) | **Reuse (wrap)** | Open-vocabulary, real-time, Python API available |
-| Arm Motion Planning | `moveit2` + `open_manipulator_x_moveit_config` | **Reuse** | Full IK/planning config pre-built by ROBOTIS |
-| Arm URDF | `open_manipulator_x_description` | **Reuse** | Official ROBOTIS description package |
-| Depth Projection | `image_geometry` + `tf2` | **Reuse** | Standard ROS 2 perception utilities |
-| Semantic Map | Custom `semantic_map_server` node | **Custom** | No standard ROS 2 package for queryable semantic object registries |
-| Command Parser | Custom `fetch_command_node` | **Custom** | Bridges text input → object label → Nav2 goal |
-| Grasp Coordinator | Custom `grasp_coordinator_node` | **Custom** | Integrates detection pose → MoveIt 2 grasp execution |
+| SLAM / Mapping | `slam_toolbox` | ✅ **Reuse** | Official ROS 2 SLAM package; tested with TurtleBot; stable |
+| EKF Localization | `robot_localization` | ✅ **Reuse** | Industry standard for mobile-robot sensor fusion |
+| Navigation | `nav2` | ✅ **Reuse** | Full action server, layered costmaps, recovery behaviors |
+| Object Detection | YOLOWorld (`ultralytics`) | 🔄 **Reuse (wrap)** | Open-vocabulary, real-time; thin ROS 2 wrapper required |
+| Arm Motion Planning | `moveit2` + `open_manipulator_x_moveit_config` | ✅ **Reuse** | Full IK/planning config pre-built by ROBOTIS |
+| Arm URDF | `open_manipulator_x_description` | ✅ **Reuse** | Official ROBOTIS description package |
+| Depth Projection | `image_geometry` + `tf2` | ✅ **Reuse** | Standard ROS 2 perception utilities |
+| Semantic Map | Custom `semantic_map_server` | 🔨 **Custom** | No standard ROS 2 package for a queryable semantic object registry |
+| Command Parser | Custom `fetch_command_node` | 🔨 **Custom** | Bridges text input → semantic query → Nav2 goal |
+| Grasp Coordinator | Custom `grasp_coordinator_node` | 🔨 **Custom** | Integrates detection pose → grasp scoring → MoveIt 2 execution |
+| Noise Injection | Custom `noise_injector_node` | 🔨 **Custom** | Adds realistic sensor degradation to idealized Gazebo data |
 
-The highest-risk components are the custom semantic map server, command parser, and grasp coordinator, since they define the project-specific glue between perception, navigation, and manipulation.
+> **Highest-risk components:** The custom semantic map server, fetch command node, and grasp coordinator define the project-specific glue between perception, navigation, and manipulation. These carry the highest iteration risk across milestones.
 
 ---
 
 ## 7. High-Level System Architecture
 
-The system follows a **Perception → Estimation → Planning → Actuation** flow with two additional coordination layers: a **Semantic Layer** that maintains the object registry, and a **Task Layer** that sequences the full fetch behavior (navigate → detect → grasp → return).
+The system follows a **Perception → Estimation → Planning → Actuation** flow, with two coordination layers running across it:
 
-**Control strategy summary.** The base uses Nav2's velocity smoother outputting to `/cmd_vel`, translated to wheel commands by the iRobot Create 3 firmware. The arm uses a `ros2_control` `JointTrajectoryController`, commanded by MoveIt 2 via the `FollowJointTrajectory` action. The two controllers operate independently; the base is explicitly stopped before arm motion begins to avoid destabilizing the platform.
+- **Semantic Layer** — maintains the live object registry (`semantic_map_server`)
+- **Task Layer** — sequences the full fetch behavior (`fetch_command_node`)
 
-**Fetch task sequence.** At a high level, the system executes the following steps:
+### Control Strategy
 
-1. Receive a natural-language fetch command (e.g., via a text UI) in the `fetch_command_node`.
-2. Query the semantic map for the most likely pose of the requested object.
-3. Use Nav2 to plan and navigate to a base pose near the object.
-4. Refine the object pose using YOLOWorld detections and depth projection from the OAK-D camera.
-5. Stop the base and execute an arm approach and grasp trajectory via MoveIt 2.
-6. Return to the operator's starting pose and release the object.
+| Controller | Output | Interface |
+|---|---|---|
+| Nav2 velocity smoother | `/cmd_vel` → iRobot Create 3 firmware | Differential drive wheel commands |
+| MoveIt 2 | `/joint_trajectory` → `JointTrajectoryController` | `FollowJointTrajectory` action |
+
+The two controllers operate **independently**. The base is explicitly stopped before arm motion begins to prevent platform destabilization during grasping.
+
+### Fetch Task Sequence
+
+```
+1. Operator issues command ──► "fetch the red bottle"
+         │
+         ▼
+2. fetch_command_node parses ──► { label: "bottle", color: "red" }
+         │
+         ▼
+3. Query semantic map ──► returns best-known 3D pose in world frame
+         │                (if unknown → triggers active search sweep)
+         ▼
+4. Nav2 navigates base ──► to approach pose near the object
+         │
+         ▼
+5. YOLOWorld + OAK-D ──► refines object pose via live detection + depth
+         │
+         ▼
+6. Grasp coordinator ──► scores candidates → calls MoveIt 2
+         │
+         ▼
+7. MoveIt 2 executes ──► approach trajectory → grasp → lift to carry pose
+         │
+         ▼
+8. Nav2 returns ──► navigates back to operator start pose
+         │
+         ▼
+9. Release object ──► mission complete → state = IDLE
+```
+
+### ROS 2 Node Graph
+
+The diagram below shows all nodes, their layer membership, and the exact topic/service connections between them.
 
 ```mermaid
+%%{init: {'theme': 'default', 'themeVariables': {'primaryColor': '#c8c8f0', 'primaryTextColor': '#000', 'primaryBorderColor': '#9090cc', 'lineColor': '#555', 'clusterBkg': '#ffffcc', 'clusterBorder': '#cccc00', 'fontSize': '14px', 'fontFamily': 'monospace'}}}%%
 flowchart TD
     subgraph PERCEPTION["Perception"]
         P1["LiDAR Driver\nrplidar_ros · Library"]
         P2["OAK-D Camera Driver\ndepthai_ros · Library"]
         P3["YOLOWorld Detector\nultralytics wrapper · Custom"]
     end
-
     subgraph ESTIMATION["Estimation"]
         E1["SLAM Toolbox\nLibrary"]
         E2["EKF Localization\nrobot_localization · Library"]
         E3["Semantic Map Server\nCustom"]
         E4["Depth Projection\nimage_geometry + tf2 · Library"]
     end
-
     subgraph PLANNING["Planning"]
         PL1["Nav2 Global Planner\nLibrary"]
         PL2["Nav2 Local Planner DWB\nLibrary"]
@@ -207,12 +323,10 @@ flowchart TD
         PL4["MoveIt 2 Arm Planner\nmoveit2 · Library"]
         PL5["Grasp Coordinator\nCustom"]
     end
-
     subgraph ACTUATION["Actuation"]
         A1["Diff-Drive Controller\nros2_control · Library"]
         A2["Joint Trajectory Controller\nros2_control · Library"]
     end
-
     P1 -->|/scan| E1
     P1 -->|/scan| PL2
     P2 -->|/rgb| P3
@@ -229,52 +343,195 @@ flowchart TD
     PL5 -->|MoveGroupInterface| PL4
     PL4 -->|/joint_trajectory| A2
 ```
+
+### Complete Topic & Service Reference
+
+> **Note:** Topics marked *(planned)* are designed in M1 but implemented in later milestones.
+
+| Topic / Service | Type | Direction | Status | Description |
+|---|---|---|---|---|
+| `/fetch_command` | `std_msgs/String` | Operator → Node | 🔜 Planned | Raw text command from operator |
+| `/fetch_status` | `std_msgs/String` | Node → Operator | ✅ M1 | Heartbeat + mission state at 1 Hz |
+| `/fetch_goal` | `custom/FetchGoal` | Command → Map | 🔜 Planned | Structured semantic query |
+| `/query_object_location` | `custom/QueryObject` (srv) | Planner → Map | 🔜 Planned | Request object 3D pose by label |
+| `/object_pose` | `geometry_msgs/PoseStamped` | Map → Planner | 🔜 Planned | Best-known object location |
+| `/detected_objects` | `custom/DetectedObjects` | Vision → Map | 🔜 Planned | Bounding boxes + confidence scores |
+| `/detected_object_pose` | `geometry_msgs/PoseStamped` | Vision → Grasp | 🔜 Planned | Refined 3D object pose |
+| `/scan` | `sensor_msgs/LaserScan` | RPLIDAR → SLAM | ✅ M1 | Raw 2D LiDAR scan |
+| `/scan_noisy` | `sensor_msgs/LaserScan` | Injector → downstream | ✅ M1 | Noise-injected LiDAR |
+| `/odom` | `nav_msgs/Odometry` | Create 3 → EKF | ✅ M1 | Raw wheel odometry |
+| `/odom_noisy` | `nav_msgs/Odometry` | Injector → downstream | ✅ M1 | Noise-injected odometry |
+| `/odom/filtered` | `nav_msgs/Odometry` | EKF → SLAM | 🔜 Planned | Fused odometry estimate |
+| `/map` | `nav_msgs/OccupancyGrid` | SLAM → Nav2 | 🔜 Planned | Live occupancy grid |
+| `/camera/rgb/image_raw` | `sensor_msgs/Image` | OAK-D → Vision | 🔜 Planned | Color stream |
+| `/camera/depth/image_rect` | `sensor_msgs/Image` | OAK-D → Projection | 🔜 Planned | Aligned depth frame |
+| `/camera/points` | `sensor_msgs/PointCloud2` | OAK-D → Grasp | 🔜 Planned | 3D point cloud for grasp scoring |
+| `/cmd_vel` | `geometry_msgs/Twist` | Nav2 → Create 3 | 🔜 Planned | Base velocity commands |
+| `/joint_trajectory` | `trajectory_msgs/JointTraj` | MoveIt 2 → Arm | 🔜 Planned | Arm motion execution |
+
 ---
 
 ## 8. Package Structure
 
-The ROS 2 package is organized as follows:
-
 ```
 semantic_fetch_robot/
-├── package.xml
-├── setup.py
-├── setup.cfg
-├── README.md
+├── README.md                          Project overview and quick-start
+├── milestone1.md                      ← This document
+├── _config.yml                        GitHub Pages configuration
+├── index.md                           Project website index
+│
+├── package.xml                        ROS 2 package manifest
+├── setup.py                           Entry point registration
+├── setup.cfg                          Python build configuration
+│
 ├── launch/
-│   └── bringup.launch.py
+│   └── bringup.launch.py              Full system launch (M2+)
+│
 ├── config/
-│   ├── nav2_params.yaml
-│   └── moveit_params.yaml
+│   ├── nav2_params.yaml               Nav2 stack tuning (M2+)
+│   └── moveit_params.yaml             MoveIt 2 arm planning config (M5+)
+│
 ├── semantic_fetch_robot/
 │   ├── __init__.py
-│   ├── semantic_fetch_node.py
-│   └── noise_injector_node.py
+│   ├── semantic_fetch_node.py         ✅ M1 — Heartbeat + state machine scaffold
+│   ├── noise_injector_node.py         ✅ M1 — Gaussian noise on LiDAR + odometry
+│   ├── fetch_command_node.py          🔜 M2 — NLP command parser → fetch goal
+│   ├── navigation_controller_node.py  🔜 M2 — Nav2 action client + recovery
+│   ├── vision_node.py                 🔜 M3 — YOLOWorld + OAK-D depth projection
+│   ├── semantic_map_node.py           🔜 M4 — Object registry + query service
+│   └── grasp_coordinator_node.py      🔜 M5 — Grasp scoring + MoveIt 2 interface
+│
 └── test/
-    └── test_node.py
+    ├── test_copyright.py              Apache license header checks
+    ├── test_flake8.py                 PEP 8 style enforcement
+    ├── test_pep257.py                 Docstring convention checks
+    └── test_node.py                   Node lifecycle integration test
 ```
 
-### Milestone 1 Nodes
+---
 
-`semantic_fetch_node.py` is the starting point for the fetch pipeline.
+## 9. Milestone 1 Nodes
 
-Its responsibilities in Milestone 1 are to:
+### Node 1: `semantic_fetch_node.py` ✅
 
-- Initialize the ROS 2 node and publisher infrastructure.
-- Periodically publish heartbeats on the `/fetch_status` topic to confirm that the package is being built and run correctly within the workspace.
+The starting point for the fetch pipeline and the predecessor to the eventual `fetch_command_node`. In Milestone 1 its role is to verify that the package builds, the node lifecycle works, and the topic namespace is established correctly.
 
-In the current architecture, `semantic_fetch_node.py` is the predecessor to the eventual `fetch_command_node`. Creating this initial skeleton:
+**Responsibilities in Milestone 1:**
+- Initialize the ROS 2 node and publisher infrastructure
+- Publish heartbeats on `/fetch_status` at 1 Hz to confirm the package is operational
+- Establish the naming convention and topic namespace for all future nodes
 
-- Establishes a clear naming convention for the main node.
-- Defines a consistent topic namespace for nodes in this package.
-- Provides an early prototype of the operator status feedback channel.
+**How it evolves:** As the project progresses, `/fetch_status` will carry richer mission state — `NAVIGATING`, `DETECTING`, `GRASPING`, `RETURNING` — replacing the current `IDLE` placeholder. The node will be refactored into `fetch_command_node.py` with full NLP parsing and state machine logic in M2.
 
-As the project progresses to later milestones, `/fetch_status` will carry richer information about the robot's task state (navigating, detecting, grasping, returning). The `semantic_fetch_node.py` implementation is entirely custom, built with `rclpy` and depending only on core ROS 2 libraries.
+```python
+class SemanticFetchNode(Node):
+    def __init__(self):
+        super().__init__('semantic_fetch_node')
+        self.publisher_ = self.create_publisher(String, 'fetch_status', 10)
+        self.timer = self.create_timer(1.0, self.timer_callback)
+        self.get_logger().info('Semantic Fetch Node initialized — IDLE.')
 
-`noise_injector_node.py` is the second custom node. Because the entire project runs in simulation, Gazebo provides idealized sensor data that is free of environmental noise. To approximate real-world conditions, this node:
+    def timer_callback(self):
+        msg = String()
+        msg.data = 'SemanticFetchRobot: IDLE — Awaiting fetch command'
+        self.publisher_.publish(msg)
+```
 
-- Subscribes to `/scan` and `/odom`.
-- Injects Gaussian noise into LiDAR ranges and odometry pose estimates.
-- Publishes the noisy data on `/scan_noisy` and `/odom_noisy`.
+| Detail | Value |
+|---|---|
+| Published topic | `/fetch_status` → `std_msgs/String` @ 1 Hz |
+| Dependencies | `rclpy`, `std_msgs` only |
+| External deps | None in M1 |
 
-All downstream nodes consume the noisy topics instead of the raw simulated data. The noise parameters (mean and standard deviation) are exposed as ROS 2 parameters, allowing the noise profile to be adjusted at launch time without code changes.
+---
+
+### Node 2: `noise_injector_node.py` ✅
+
+Because Gazebo provides idealized, noise-free sensor data, this node injects realistic sensor degradation from day one. Every downstream node consumes the noisy topics — so the pipeline is stress-tested under near-real-world conditions starting from Milestone 1.
+
+**Why this matters:** A pipeline that works only on perfect simulated data will likely fail on real hardware where LiDAR returns scatter and wheel odometry drifts. Injecting noise during development validates robustness before any sim-to-real transfer.
+
+**Responsibilities:**
+- Subscribe to `/scan` and `/odom`
+- Inject Gaussian noise into LiDAR ranges and odometry pose estimates
+- Publish `/scan_noisy` and `/odom_noisy` — consumed by all downstream nodes
+- Expose `lidar_noise_std` and `odom_noise_std` as ROS 2 parameters, configurable at launch without code changes
+
+```python
+class NoiseInjectorNode(Node):
+    def __init__(self):
+        super().__init__('noise_injector_node')
+        self.declare_parameter('lidar_noise_std', 0.02)   # metres
+        self.declare_parameter('odom_noise_std',  0.005)  # metres / radians
+        self.scan_sub = self.create_subscription(LaserScan, '/scan', self.scan_cb, 10)
+        self.odom_sub = self.create_subscription(Odometry,  '/odom', self.odom_cb, 10)
+        self.scan_pub = self.create_publisher(LaserScan, '/scan_noisy', 10)
+        self.odom_pub = self.create_publisher(Odometry,  '/odom_noisy', 10)
+```
+
+| Detail | Value |
+|---|---|
+| Subscribes | `/scan`, `/odom` |
+| Publishes | `/scan_noisy`, `/odom_noisy` |
+| Parameters | `lidar_noise_std` (default 0.02 m), `odom_noise_std` (default 0.005 m/rad) |
+
+---
+
+## 10. Running Milestone 1
+
+### Build
+
+```bash
+mkdir -p ~/ros2_ws/src && cd ~/ros2_ws/src
+git clone https://github.com/suyash-asu/semantic_fetch_robot.git
+
+cd ~/ros2_ws
+rosdep install --from-paths src --ignore-src -r -y
+colcon build --symlink-install
+source install/setup.bash
+```
+
+### Run
+
+```bash
+# Terminal 1 — fetch scaffold node
+ros2 run semantic_fetch_robot semantic_fetch_node
+
+# Terminal 2 — noise injector
+ros2 run semantic_fetch_robot noise_injector_node \
+    --ros-args -p lidar_noise_std:=0.02 -p odom_noise_std:=0.005
+
+# Monitor heartbeat
+ros2 topic echo /fetch_status
+
+# Verify noise is applied
+ros2 topic echo /scan_noisy
+```
+
+### Test
+
+```bash
+colcon test --packages-select semantic_fetch_robot
+colcon test-result --verbose
+```
+
+### Milestone 1 Checklist
+
+| Item | Status |
+|---|---|
+| ROS 2 Python package initialized | ✅ |
+| `package.xml` with all dependencies declared | ✅ |
+| `setup.py` / `setup.cfg` configured | ✅ |
+| `semantic_fetch_node` — builds, spins, publishes on `/fetch_status` | ✅ |
+| `noise_injector_node` — subscribes, injects noise, republishes | ✅ |
+| `colcon build` — zero errors, zero warnings | ✅ |
+| `colcon test` — flake8, pep257, copyright all green | ✅ |
+| GitHub repository initialized on `main` | ✅ |
+
+---
+
+*Next → [Milestone 2 — SLAM mapping + Nav2 waypoint navigation](#)*
+
+---
+
+**Semantic Fetch Robot** · RAS 598 Mobile Robotics · Team: Point Cloud Nine · Arizona State University · 2026
