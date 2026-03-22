@@ -19,22 +19,25 @@ nav_order: 1
   </div>
 </div>
 
+## On this page
+
+- [Project Statement](#project-statement)
+- [The Problem We Are Solving](#the-problem-we-are-solving)
+- [Project Components](#project-components)
+- [Technical Specifications](#technical-specifications)
+- [Current Status](#current-status)
+
 ## Project Statement
 
-The *Semantic Fetch Robot* works in a *mapped indoor environment* i.e. TurtleBot default Gazebo’s Harmonics depot / warehouse world. The human operator gives commands to fetch an object (e.g., red bottle) via text command. The robot will then do the following:
-
-1. Navigate autonomously through the mapped environment.
-2. Locate the target item with open vocabulary visual detection. 
-3. Approach and pick up the item using the mounted OpenMANIPULATOR-X arm. 
-4. Return to the operator’s starting point to deliver the item.
+The Semantic Fetch Robot is a ROS 2 mobile manipulator operating in a mapped indoor warehouse environment (TurtleBot default Gazebo Harmonic depot world). Given a text command such as "fetch the red bottle", it autonomously navigates to the relevant region, locates the requested object using open-vocabulary visual detection, grasps it with the mounted OpenMANIPULATOR-X arm, and returns to the operator to deliver the item.
 
 **Success state:** The robot correctly identifies, grasps, and delivers the requested object in ≥ 75% of trials within a pre-mapped simulation environment, without collisions.
 
 ## The Problem We Are Solving
 
-There are very few robots that are good at moving and also be able to pick things up. It's also not very common for them to respond to verbal commands. The additional bridge between the two capabilities is *Semantic Fetch*.  In order for the robot to succeed, they must know exactly what to get, as well as the location of the object to be picked up, how to get to that object, and return to the starting point with the object. To accomplish this task, the components of SLAM-based (Simultaneous Localization and Mapping) navigation will be combined with the use of semantically grounded object (robotic) detection, and arm motion planning, all integrated into one pipeline running on ROS 2.
+Most service robots either move well or manipulate well, but few can do both while also understanding flexible, natural-language requests. Semantic Fetch aims to bridge this gap by enabling a mobile robot to understand what object is being requested, infer where it is likely to be, navigate to it, and bring it back safely.
 
-This is a well-known and studied area of service robotics, and as such the goal of the project is to develop simulations that will serve as the final proof of concept prior to implementation of the developed system to real hardware robots.
+To achieve this, we combine SLAM-based (Simultaneous Localization and Mapping) navigation with semantically grounded object detection and arm motion planning in a single ROS 2 pipeline. The project focuses on building realistic simulations that serve as a proof of concept before deployment to real hardware.
 
 ## Project Components
 
@@ -68,3 +71,8 @@ This is a well-known and studied area of service robotics, and as such the goal 
 | **Simulation World** | TurtleBot default depot world |
 | **ROS Version** | ROS 2 Jazzy Jalisco |
 | **OS** | Ubuntu 24.04 LTS |
+
+## Current Status
+
+- Milestone 1 (proposal and architecture) has been completed; details are documented in [Milestone 1](milestone1.md).
+- Implementation, integration, and evaluation in simulation are planned next.
