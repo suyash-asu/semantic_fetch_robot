@@ -196,7 +196,3 @@ In the current architecture of the package, the `semantic_fetch_node.py` is the 
 The `semantic_fetch_node.py` has been developed entirely from scratch using rclpy and does not depend on any pre-existing nodes or third-party packages beyond the core ROS 2 software; thus, it is also an entirely custom implementation.
 
 `noise_injector_node.py` is the second custom node. Since the entire project is simulated, so Gazebo provides simulated sensor data that is not affected by external environmental conditions and is free of noise. In order to provide a more real-world representation of LiDAR range measurements and odometry pose estimates, this node subscribes on `/scan` and `/odom`, then injects Gaussian noise into those sensor readings and publishes the noisy data on `/scan_noisy` and `/odom_noisy`. Therefore, all other downstream nodes use the noisy data instead of the raw simulated data. The parameters used to create noise (mean and standard deviation) will be defined as ROS 2 parameters, allowing any adjustments to the noise profile at launch time. This means there will be no changes required in code to adjust the noise profile.
-
-<div style="margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-family:var(--mono);font-size:0.75rem;color:var(--text-dim);">
-  <span>← <a href="/">Overview</a></span>
-</div>
