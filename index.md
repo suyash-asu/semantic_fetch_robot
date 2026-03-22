@@ -5,7 +5,7 @@ nav_order: 1
 ---
 
 <div class="hero">
-  <div class="hero-tag">RAS 598 · Mobile Robotics</div>
+  <div class="hero-tag">RAS 598 - Mobile Robotics</div>
   <h1>Semantic Fetch Robot</h1>
   <p class="hero-desc">
     A ROS 2 mobile manipulation system that accepts a natural-language object request, navigates an indoor environment, locates the target using open-vocabulary vision, and physically retrieves it using a mounted robotic arm.

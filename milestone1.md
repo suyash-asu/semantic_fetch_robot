@@ -2,6 +2,7 @@
 layout: default
 title: "Milestone 1: Proposal & Architecture"
 nav_order: 2
+mermaid: true
 ---
 
 # Milestone 1: Proposal & Architecture
@@ -176,20 +177,25 @@ semantic_fetch_robot/
 ├── setup.cfg
 ├── README.md
 ├── launch/
-│   └── bringup.launch.py
+│   |── bringup.launch.py
 ├── config/
 │   ├── nav2_params.yaml
-│   └── moveit_params.yaml         
+│   |── moveit_params.yaml         
 ├── semantic_fetch_robot/
 │   ├── __init__.py
 │   ├── semantic_fetch_node.py
-└── test/
-    └── test_node.py
+|   |── noise_injector_node.py
+|── test/
+    |── test_node.py
 ```
 
 ### Milestone 1 Nodes
 
-`semantic_fetch_node.py` confirms the ROS 2 package builds and runs correctly. It initializes the node and publishes a status heartbeat, serving as the foundation for all subsequent nodes.
+`semantic_fetch_node.py` will be the starting point for the fetch pipeline. It serves two purposes: First, it initializes the ROS 2 node and builds the publisher infrastructure. Second, it periodically publishes heartbeats at the `/fetch_status` topic to indicate that the package is being built and run correctly within the workspace. By having the heartbeats published regularly, it confirms that the ROS 2 communications layer is functional before higher-level logic will be incorporated into the fetched command node.
+In the current architecture of the package, the `semantic_fetch_node.py` is the predecessor to the `fetch_command_node`. The decision to create an initial skeleton was a design decision that creates a proper naming convention for the node, a consistent topic namespace for all nodes being developed in this package, and defines how all publisher and subscriber nodes will interact. The heartbeat publisher also provides an early prototype of the operator status feedback channel, and as the project progresses to the next milestone there will be additional information about the tasks being performed by the fetch robot (navigating, detecting, grasping and returning) provided through the channel. 
+The `semantic_fetch_node.py` has been developed entirely from scratch using rclpy and does not depend on any pre-existing nodes or third-party packages beyond the core ROS 2 software; thus, it is also an entirely custom implementation.
+
+`noise_injector_node.py` is the second custom node. Since the entire project is simulated, so Gazebo provides simulated sensor data that is not affected by external environmental conditions and is free of noise. In order to provide a more real-world representation of LiDAR range measurements and odometry pose estimates, this node subscribes on `/scan` and `/odom`, then injects Gaussian noise into those sensor readings and publishes the noisy data on `/scan_noisy` and `/odom_noisy`. Therefore, all other downstream nodes use the noisy data instead of the raw simulated data. The parameters used to create noise (mean and standard deviation) will be defined as ROS 2 parameters, allowing any adjustments to the noise profile at launch time. This means there will be no changes required in code to adjust the noise profile.
 
 <div style="margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-family:var(--mono);font-size:0.75rem;color:var(--text-dim);">
   <span>← <a href="/">Overview</a></span>

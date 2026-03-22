@@ -1,3 +1,5 @@
 title: Semantic Fetch Robot
 description: ROS2 project for a semantic object-fetching mobile robot
 remote_theme: just-the-docs/just-the-docs
+mermaid:
+  version: "10.9.0"
