@@ -42,11 +42,11 @@ Our project sits at the intersection of three active research areas: semantic ma
 |---|---|
 | **Robot Platform** | TurtleBot |
 | **Mounted Arm** | OpenMANIPULATOR-X (4-DOF + gripper, DYNAMIXEL XM430) |
-| **Kinematic Model — Base** | Differential Drive (iRobot Create 3) |
-| **Kinematic Model — Arm** | Serial chain, 4 revolute joints + parallel gripper |
+| **Kinematic Model (Base)** | Differential Drive (iRobot Create 3) |
+| **Kinematic Model (Arm)** | Serial chain, 4 revolute joints + parallel gripper |
 | **Sensors** | OAK-D Spatial AI stereo camera, RPLIDAR A1 2D LiDAR, IMU |
 | **Simulator** | Gazebo Harmonic (`gz-harmonic`) |
-| **Simulation World** | `depot.sdf` — TurtleBot default depot world |
+| **Simulation World** | `depot.sdf` (TurtleBot default depot world) |
 | **ROS Version** | ROS 2 Jazzy Jalisco |
 | **OS** | Ubuntu 24.04 LTS |
 
@@ -62,7 +62,7 @@ ros2 launch turtlebot4_gz_bringup turtlebot4_gz.launch.py \
   slam:=true nav2:=true rviz:=true
 ```
 
-**Chosen World:** `depot.sdf` — the TurtleBot default depot warehouse world. This environment was chosen because:
+**Chosen World:** `depot.sdf` It is the TurtleBot default depot warehouse world. This environment was chosen because:
 - It ships pre-built with `turtlebot4-simulator`, requiring no custom world authoring
 - A pre-built map (`depot.yaml`) is available, enabling Nav2 localization from day one
 - The warehouse layout (corridors, open shelving areas) is representative of real service robot environments
@@ -117,8 +117,52 @@ A core principle of this project is to **reuse well-maintained open-source packa
 
 The system follows a **Perception → Estimation → Planning → Actuation** flow with two additional coordination layers: a **Semantic Layer** that maintains the object registry, and a **Task Layer** that sequences the full fetch behavior (navigate → detect → grasp → return).
 
-**Control strategy summary.** The base uses Nav2's velocity smoother outputting to `/cmd_vel`, translated to wheel commands by the iRobot Create 3 firmware. The arm uses `ros2_control` JointTrajectoryController, commanded by MoveIt 2 via the `FollowJointTrajectory` action. The two controllers operate independently — the base is stopped before arm motion begins, preventing simultaneous base/arm movement that could destabilize the platform.
+**Control strategy summary.** The base uses Nav2's velocity smoother outputting to `/cmd_vel`, translated to wheel commands by the iRobot Create 3 firmware. The arm uses `ros2_control` JointTrajectoryController, commanded by MoveIt 2 via the `FollowJointTrajectory` action. The two controllers operate independently like, the base is stopped before arm motion begins, preventing simultaneous base/arm movement that could destabilize the platform.
 
+```mermaid
+flowchart TD
+    subgraph PERCEPTION["Perception"]
+        P1["LiDAR Driver\nrplidar_ros · Library"]
+        P2["OAK-D Camera Driver\ndepthai_ros · Library"]
+        P3["YOLOWorld Detector\nultralytics wrapper · Custom"]
+    end
+
+    subgraph ESTIMATION["Estimation"]
+        E1["SLAM Toolbox\nLibrary"]
+        E2["EKF Localization\nrobot_localization · Library"]
+        E3["Semantic Map Server\nCustom"]
+        E4["Depth Projection\nimage_geometry + tf2 · Library"]
+    end
+
+    subgraph PLANNING["Planning"]
+        PL1["Nav2 Global Planner\nLibrary"]
+        PL2["Nav2 Local Planner DWB\nLibrary"]
+        PL3["Fetch Command Node\nCustom"]
+        PL4["MoveIt 2 Arm Planner\nmoveit2 · Library"]
+        PL5["Grasp Coordinator\nCustom"]
+    end
+
+    subgraph ACTUATION["Actuation"]
+        A1["Diff-Drive Controller\nros2_control · Library"]
+        A2["Joint Trajectory Controller\nros2_control · Library"]
+    end
+
+    P1 -->|/scan| E1
+    P1 -->|/scan| PL2
+    P2 -->|/rgb| P3
+    P2 -->|/depth| E4
+    P3 -->|/detected_objects| E3
+    E4 -->|3D pose| E3
+    E2 -->|/odom/filtered| E1
+    E1 -->|/map| PL1
+    E3 -->|object pose| PL3
+    PL3 -->|/goal_pose| PL1
+    PL3 -->|trigger| PL5
+    PL1 -->|/plan| PL2
+    PL2 -->|/cmd_vel| A1
+    PL5 -->|MoveGroupInterface| PL4
+    PL4 -->|/joint_trajectory| A2
+```
 ---
 
 ## 8. Package Structure

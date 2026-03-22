@@ -45,7 +45,7 @@ This is a well-known and studied area of service robotics, and as such the goal 
   </div>
   <div class="card">
     <h3>Open-Vocabulary Detection</h3>
-    <p>YOLOWorld or CLIP-based detection on the OAK-D camera stream — allows the robot to find objects described in free text without a fixed class list.</p>
+    <p>YOLOWorld or CLIP-based detection on the OAK-D camera stream which allows the robot to find objects described in free text without a fixed class list.</p>
   </div>
   <div class="card">
     <h3>Autonomous Navigation</h3>
