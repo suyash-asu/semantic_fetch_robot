@@ -1,16 +1,10 @@
 ---
 layout: default
 title: "Milestone 1: Proposal & Architecture"
+nav_order: 2
 ---
 
 # Milestone 1: Proposal & Architecture
-
-<div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:2rem;">
-  <span class="badge badge-success">✓ Submitted</span>
-  <span class="badge badge-info">Due: Mar 6, 2026</span>
-  <span class="badge badge-info">Weight: 5%</span>
-  <span class="badge badge-info">~1,500 words</span>
-</div>
 
 ---
 
