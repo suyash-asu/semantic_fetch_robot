@@ -2,7 +2,6 @@
 layout: default
 title: Overview
 nav_order: 1
-has_children: true
 ---
 
 <div class="hero">
@@ -28,37 +27,18 @@ has_children: true
 - [Technical Specifications](#technical-specifications)
 - [Current Status](#current-status)
 
----
-layout: default
-title: Project Statement
-parent: Overview
-nav_order: 1
----
-
 ## Project Statement
 
 The Semantic Fetch Robot is a ROS 2 mobile manipulator operating in a mapped indoor warehouse environment (TurtleBot default Gazebo Harmonic depot world). Given a text command such as "fetch the red bottle", it autonomously navigates to the relevant region, locates the requested object using open-vocabulary visual detection, grasps it with the mounted OpenMANIPULATOR-X arm, and returns to the operator to deliver the item.
 
 **Success state:** The robot correctly identifies, grasps, and delivers the requested object in ≥ 75% of trials within a pre-mapped simulation environment, without collisions.
 
----
-layout: default
-title: The problem we are solving
-parent: Overview
-nav_order: 2
----
 ## The Problem We Are Solving
 
 Most service robots either move well or manipulate well, but few can do both while also understanding flexible, natural-language requests. Semantic Fetch aims to bridge this gap by enabling a mobile robot to understand what object is being requested, infer where it is likely to be, navigate to it, and bring it back safely.
 
 To achieve this, we combine SLAM-based (Simultaneous Localization and Mapping) navigation with semantically grounded object detection and arm motion planning in a single ROS 2 pipeline. The project focuses on building realistic simulations that serve as a proof of concept before deployment to real hardware.
 
----
-layout: default
-title: Project Components
-parent: Overview
-nav_order: 1
----
 ## Project Components
 
 <div class="card-grid">
@@ -80,12 +60,6 @@ nav_order: 1
   </div>
 </div>
 
----
-layout: default
-title: Technical Specifications
-parent: Overview
-nav_order: 1
----
 ## Technical Specifications
 
 | Parameter | Value |
@@ -98,12 +72,6 @@ nav_order: 1
 | **ROS Version** | ROS 2 Jazzy Jalisco |
 | **OS** | Ubuntu 24.04 LTS |
 
----
-layout: default
-title: Current Status
-parent: Overview
-nav_order: 1
----
 ## Current Status
 
 - Milestone 1 (proposal and architecture) has been completed; details are documented in [Milestone 1](milestone1.md).

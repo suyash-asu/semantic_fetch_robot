@@ -3,3 +3,10 @@ description: ROS2 project for a semantic object-fetching mobile robot
 remote_theme: just-the-docs/just-the-docs
 mermaid:
   version: "10.9.0"
+
+just_the_docs:
+  toc:
+    sidebar: true
+    min_level: 2
+    max_level: 3
+  
