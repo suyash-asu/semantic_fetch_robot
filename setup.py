@@ -32,6 +32,8 @@ setup(
         "semantic_fetch_node = semantic_fetch_robot.semantic_fetch_node:main",
         "noise_injector_node = semantic_fetch_robot.noise_injector_node:main",
         "navigate_to_goal = semantic_fetch_robot.navigate_to_goal:main",
+        "arm_controller = semantic_fetch_robot.arm_controller:main",
+        "fetch_coordinator = semantic_fetch_robot.fetch_coordinator:main",
         ],
     },
 )
