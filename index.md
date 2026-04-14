@@ -57,7 +57,7 @@ To achieve this, we combine SLAM-based (Simultaneous Localization and Mapping) n
 layout: default
 title: Project Components
 parent: Overview
-nav_order: 1
+nav_order: 3
 ---
 ## Project Components
 
@@ -84,7 +84,7 @@ nav_order: 1
 layout: default
 title: Technical Specifications
 parent: Overview
-nav_order: 1
+nav_order: 4
 ---
 ## Technical Specifications
 
@@ -102,7 +102,7 @@ nav_order: 1
 layout: default
 title: Current Status
 parent: Overview
-nav_order: 1
+nav_order: 5
 ---
 ## Current Status
 
