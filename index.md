@@ -1,11 +1,15 @@
 ---
 layout: default
 title: Overview
-has_toc: true
 nav_order: 1
 ---
+# Semantic Fetch Robot
 
-<div class="hero">
+A ROS 2 mobile manipulation system that accepts a natural-language object request, navigates an indoor environment, locates the target using open-vocabulary vision, and physically retrieves it using a mounted robotic arm.
+
+TurtleBot + OpenMANIPULATOR-X Gazebo Harmonic Differential Drive LiDAR + OAK-D RGB-D Active Development
+
+<!-- <div class="hero">
   <div class="hero-tag">RAS 598 - Mobile Robotics</div>
   <h1>Semantic Fetch Robot</h1>
   <p class="hero-desc">
@@ -18,7 +22,7 @@ nav_order: 1
     <span class="meta-chip">LiDAR + OAK-D RGB-D</span>
     <span class="badge badge-info" style="margin-left:auto;">Active Development</span>
   </div>
-</div>
+</div> -->
 
 ## On this page
 
