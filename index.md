@@ -32,7 +32,7 @@ has_children: true
 layout: default
 title: Project Statement
 parent: Overview
-nav_order: 1
+nav_order: 6
 ---
 
 ## Project Statement
