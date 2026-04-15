@@ -76,4 +76,5 @@ To achieve this, we combine SLAM-based (Simultaneous Localization and Mapping) n
 ## Current Status
 
 - Milestone 1 (proposal and architecture) has been completed; details are documented in [Milestone 1](milestone1.md).
-- Implementation, integration, and evaluation in simulation are planned next.
+- Milestone 2 (Implementation, integration, and evaluation in simulation) is completed: details are documented in [Milestone 2](milestone2.md).
+- Object spawning + full pick-and-place pipeline are planned next.

@@ -1,0 +1,9 @@
+SLAM map in RViz -> lidarMap.png
+RViz with planned path + active navigation -> mapPath.png
+RViz + terminal showing Goal succeeded / Feedback reached -> successMessage.png
+Gazebo robot at goal -> robotAtGoal.png
+Arm home position -> home.png
+Arm pregrasp -> pregrasp.png
+Arm grasp (ground) -> grasp.png
+Arm carry -> carry.png
+Side-by-side clean vs noisy terminals -> cleanNoisy.png
