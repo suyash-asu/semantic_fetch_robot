@@ -82,8 +82,8 @@ The bcr_bot uses a standard differential drive kinematic model with two powered 
 
 | Parameter | Symbol | Value |
 |---|---|---|
-| Wheel separation | $L$ | 0.625 m (track width + wheel width − 0.01) |
-| Wheel radius | $r$ | 0.101 m |
+| Wheel separation | $$L$$ | 0.625 m (track width + wheel width − 0.01) |
+| Wheel radius | $$r$$ | 0.101 m |
 
 **Forward kinematics** — given right wheel velocity $$v_r$$ and left wheel velocity $$v_l$$:
 
