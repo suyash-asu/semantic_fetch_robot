@@ -10,7 +10,7 @@ mermaid: true
 > Milestone 2 delivers autonomous navigation in a pre-mapped warehouse environment using Nav2 and SLAM Toolbox, a verified noise injection subsystem, a working 3-DOF robotic arm with parallel gripper mounted on bcr_bot, and the foundational arm sequencing and fetch coordination nodes required for the full pick-and-place pipeline in Milestone 3.
 
 ---
-
+✅
 ## On This Page
 
 - [1. Milestone 1 Feedback Integration](#1-milestone-1-feedback-integration)
@@ -91,7 +91,7 @@ $$v = \frac{v_r + v_l}{2}$$
 
 $$\omega = \frac{v_r - v_l}{L}$$
 
-**State update** over timestep $\Delta t$:
+**State update** over timestep $$\Delta t$$:
 
 $$x' = x + v \cos(\theta) \cdot \Delta t$$
 
