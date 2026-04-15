@@ -119,7 +119,7 @@ The custom arm uses a serial chain of three revolute joints all rotating about t
 | `arm_joint2` | Y | 0.410 m (`l3_len`) | ±90° |
 | `arm_joint3` | Y | 0.200 m (forearm + TCP) | ±90° |
 
-**Forward kinematics** — end-effector position in the arm base frame given joint angles $\theta_1, \theta_2, \theta_3$:
+**Forward kinematics** — end-effector position in the arm base frame given joint angles $$\theta_1, \theta_2, \theta_3$$:
 
 $$x_{tcp} = l_1 \sin(\theta_1) + l_2 \sin(\theta_1 + \theta_2) + l_3 \sin(\theta_1 + \theta_2 + \theta_3)$$
 
