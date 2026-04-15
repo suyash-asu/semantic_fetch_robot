@@ -2,9 +2,8 @@
 layout: default
 title: "Milestone 2: Navigation & Manipulation"
 nav_order: 3
+mermaid: true
 ---
-
-# Milestone 2: Navigation & Manipulation
 
 **Team:** Point Cloud Nine · RAS 598 · ASU · Spring 2026
 
@@ -83,8 +82,8 @@ The bcr_bot uses a standard differential drive kinematic model with two powered 
 
 | Parameter | Symbol | Value |
 |---|---|---|
-| Wheel separation | $$L$$ | 0.625 m (track width + wheel width − 0.01) |
-| Wheel radius | $$r$$ | 0.101 m |
+| Wheel separation | $L$ | 0.625 m (track width + wheel width − 0.01) |
+| Wheel radius | $r$ | 0.101 m |
 
 **Forward kinematics** — given right wheel velocity $$v_r$$ and left wheel velocity $$v_l$$:
 
@@ -92,7 +91,7 @@ $$v = \frac{v_r + v_l}{2}$$
 
 $$\omega = \frac{v_r - v_l}{L}$$
 
-**State update** over timestep $$\Delta t$$:
+**State update** over timestep $\Delta t$:
 
 $$x' = x + v \cos(\theta) \cdot \Delta t$$
 
@@ -120,13 +119,13 @@ The custom arm uses a serial chain of three revolute joints all rotating about t
 | `arm_joint2` | Y | 0.410 m (`l3_len`) | ±90° |
 | `arm_joint3` | Y | 0.200 m (forearm + TCP) | ±90° |
 
-**Forward kinematics** — end-effector position in the arm base frame given joint angles $$\theta_1, \theta_2, \theta_3$$:
+**Forward kinematics** — end-effector position in the arm base frame given joint angles $\theta_1, \theta_2, \theta_3$:
 
 $$x_{tcp} = l_1 \sin(\theta_1) + l_2 \sin(\theta_1 + \theta_2) + l_3 \sin(\theta_1 + \theta_2 + \theta_3)$$
 
 $$z_{tcp} = l_1 \cos(\theta_1) + l_2 \cos(\theta_1 + \theta_2) + l_3 \cos(\theta_1 + \theta_2 + \theta_3)$$
 
-**Maximum reach** (all joints fully extended): $$0.200 + 0.410 + 0.200 = 0.810 \text{ m}$$. With the arm mounted at $$(x=0.10, z=0.18 \text{ m})$$ above `base_link`, and `base_link` at 0.295 m above the floor, the arm base is approximately 0.475 m above the ground — giving a working floor-to-arm-base distance well within reach.
+**Maximum reach** (all joints fully extended): $0.200 + 0.410 + 0.200 = 0.810 \text{ m}$. With the arm mounted at $$(x=0.10, z=0.18 \text{ m})$$ above `base_link`, and `base_link` at 0.295 m above the floor, the arm base is approximately 0.475 m above the ground — giving a working floor-to-arm-base distance well within reach.
 
 **Hardcoded grasp poses** (measured from Gazebo joint states):
 
@@ -139,7 +138,7 @@ $$z_{tcp} = l_1 \cos(\theta_1) + l_2 \cos(\theta_1 + \theta_2) + l_3 \cos(\theta
 
 ### 3.3 Gripper Kinematics
 
-The parallel gripper uses two prismatic joints (`left_finger_joint`, `right_finger_joint`) each with 35 mm stroke. Both fingers move symmetrically along the X axis. Closing the gripper commands both joints to 0.0 m; opening commands both to 0.035 m. Finger friction coefficient $$\mu = 1.5$$ in Gazebo to simulate grip on small objects.
+The parallel gripper uses two prismatic joints (`left_finger_joint`, `right_finger_joint`) each with 35 mm stroke. Both fingers move symmetrically along the X axis. Closing the gripper commands both joints to 0.0 m; opening commands both to 0.035 m. Finger friction coefficient $\mu = 1.5$ in Gazebo to simulate grip on small objects.
 
 ---
 
@@ -363,13 +362,6 @@ IDLE → NAV_TO_OBJECT → GRASP → NAV_HOME → DELIVER → IDLE
 | Uses | `ArmController` class from `arm_controller.py` |
 | Entry point | `fetch_coordinator = semantic_fetch_robot.fetch_coordinator:main` |
 
----
-
----
-layout: default
-title: "Milestone 2: Navigation & Manipulation"
-nav_order: 4
-mermaid: true
 ---
 
 ## 9. System Node Graph
