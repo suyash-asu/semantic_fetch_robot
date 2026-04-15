@@ -18,12 +18,10 @@ Run:
 import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionClient
-from rclpy.duration import Duration
 from nav2_msgs.action import NavigateToPose
-from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
+from geometry_msgs.msg import PoseStamped
 from action_msgs.msg import GoalStatus
 import time
-
 from semantic_fetch_robot.arm_controller import ArmController
 
 # ── Mission parameters ────────────────────────────────────────────────────────
