@@ -530,7 +530,7 @@ colcon test-result --verbose
 
 ---
 
-*Next → [Milestone 2 — SLAM mapping + Nav2 waypoint navigation](#)*
+*Next → [Milestone 2 — SLAM mapping + Nav2 waypoint navigation](milestone2.md)*
 
 ---
 
