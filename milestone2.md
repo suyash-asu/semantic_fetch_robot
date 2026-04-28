@@ -82,28 +82,28 @@ The bcr_bot uses a standard differential drive kinematic model with two powered 
 
 | Parameter | Symbol | Value |
 |---|---|---|
-| Wheel separation | $$L$$ | 0.625 m (track width + wheel width − 0.01) |
-| Wheel radius | $$r$$ | 0.101 m |
+| Wheel separation | $L$ | 0.625 m (track width + wheel width − 0.01) |
+| Wheel radius | $r$ | 0.101 m |
 
-**Forward kinematics** — given right wheel velocity $$v_r$$ and left wheel velocity $$v_l$$:
+**Forward kinematics** — given right wheel velocity $v_r$ and left wheel velocity $v_l$:
 
-$$v = \frac{v_r + v_l}{2}$$
+$v = \frac{v_r + v_l}{2}$
 
-$$\omega = \frac{v_r - v_l}{L}$$
+$\omega = \frac{v_r - v_l}{L}$
 
-**State update** over timestep $$\Delta t$$:
+**State update** over timestep $\Delta t$:
 
-$$x' = x + v \cos(\theta) \cdot \Delta t$$
+$x' = x + v \cos(\theta) \cdot \Delta t$
 
-$$y' = y + v \sin(\theta) \cdot \Delta t$$
+$y' = y + v \sin(\theta) \cdot \Delta t$
 
-$$\theta' = \theta + \omega \cdot \Delta t$$
+$\theta' = \theta + \omega \cdot \Delta t$
 
 **Mapping `/cmd_vel` to wheel velocities** — Nav2 publishes `linear.x` and `angular.z` on `/cmd_vel`. The Gazebo diff-drive plugin converts these to individual wheel velocities:
 
-$$v_r = v + \frac{\omega \cdot L}{2}$$
+$v_r = v + \frac{\omega \cdot L}{2}$
 
-$$v_l = v - \frac{\omega \cdot L}{2}$$
+$v_l = v - \frac{\omega \cdot L}{2}$
 
 The bcr_bot's maximum commanded speed is 1.0 m/s linear and 4.18 rad/s angular (as tested during Nav2 teleoperation). Nav2's MPPI controller operates well within these limits, typically commanding 0.3–0.5 m/s linear during autonomous navigation.
 
@@ -119,13 +119,13 @@ The custom arm uses a serial chain of three revolute joints all rotating about t
 | `arm_joint2` | Y | 0.410 m (`l3_len`) | ±90° |
 | `arm_joint3` | Y | 0.200 m (forearm + TCP) | ±90° |
 
-**Forward kinematics** — end-effector position in the arm base frame given joint angles $$\theta_1, \theta_2, \theta_3$$:
+**Forward kinematics** — end-effector position in the arm base frame given joint angles $\theta_1, \theta_2, \theta_3$:
 
-$$x_{tcp} = l_1 \sin(\theta_1) + l_2 \sin(\theta_1 + \theta_2) + l_3 \sin(\theta_1 + \theta_2 + \theta_3)$$
+$x_{tcp} = l_1 \sin(\theta_1) + l_2 \sin(\theta_1 + \theta_2) + l_3 \sin(\theta_1 + \theta_2 + \theta_3)$
 
-$$z_{tcp} = l_1 \cos(\theta_1) + l_2 \cos(\theta_1 + \theta_2) + l_3 \cos(\theta_1 + \theta_2 + \theta_3)$$
+$z_{tcp} = l_1 \cos(\theta_1) + l_2 \cos(\theta_1 + \theta_2) + l_3 \cos(\theta_1 + \theta_2 + \theta_3)$
 
-**Maximum reach** (all joints fully extended): $0.200 + 0.410 + 0.200 = 0.810 \text{ m}$. With the arm mounted at $$(x=0.10, z=0.18 \text{ m})$$ above `base_link`, and `base_link` at 0.295 m above the floor, the arm base is approximately 0.475 m above the ground — giving a working floor-to-arm-base distance well within reach.
+**Maximum reach** (all joints fully extended): $0.200 + 0.410 + 0.200 = 0.810 \text{ m}$. With the arm mounted at $(x=0.10, z=0.18 \text{ m})$ above `base_link`, and `base_link` at 0.295 m above the floor, the arm base is approximately 0.475 m above the ground — giving a working floor-to-arm-base distance well within reach.
 
 **Hardcoded grasp poses** (measured from Gazebo joint states):
 
