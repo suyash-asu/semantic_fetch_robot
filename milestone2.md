@@ -3,6 +3,7 @@ layout: default
 title: "Milestone 2: Navigation & Manipulation"
 nav_order: 3
 mermaid: true
+math: true
 ---
 
 **Team:** Point Cloud Nine · RAS 598 · ASU · Spring 2026
