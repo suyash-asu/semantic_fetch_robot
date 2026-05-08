@@ -282,22 +282,6 @@ noisy.ranges = (ranges + noise).tolist()
 | Suyash Dhir | Simulation, Navigation & Manipulation Lead | Simulation environment setup · SLAM mapping · Nav2 bringup and parameter tuning · TF frame debugging · Combined robot URDF with custom 3-DOF arm · Arm joint axis redesign (Z→Y) for ground reach · Arm pose calibration (all poses measured from Gazebo joint states) · `arm_controller.py` · `fetch_coordinator.py` · `navigate_to_goal.py` · Launch file development · `full_demo.launch.py` · All trial runs · Demo video recording | `semantic_fetch_robot/arm_controller.py` · `semantic_fetch_robot/fetch_coordinator.py` · `bcr_bot_with_arm/` · **Commit:** `a8a612a` |
 | Divyaraj Nakum | Documentation & Architecture Lead | `milestone3.md` full report · `milestone2.md` · `milestone1.md` revision · Kinematics derivation · System architecture diagrams · Ethical impact statement · Benchmarking analysis · MathJax rendering setup | `milestone3.md` · `milestone2.md` · `milestone1.md` · `_includes/head_custom.html` · **Commit:** `26c146d` |
 
-### Note on Team Circumstances
-
-Vamshi Madipelly was hospitalized for approximately 15–20 days during the project period, covering Milestones 1, 2, and 3. His absence was due to medical circumstances entirely beyond his control. Suyash and Divyaraj covered all technical and documentation work across all three milestones. The professor was informed of this situation prior to the M3 presentation.
-
-### Audit Talking Points
-
-**On the custom algorithm:** "The fetch_coordinator `run()` method is a 6-state machine. The key engineering challenge was arm joint reliability — Gazebo's physics step drops single messages, so arm_controller.py resends every command 10× at 0.4s intervals. This is the core custom logic."
-
-**On the noise injector:** "Zero-mean Gaussian with σ=0.02m on LiDAR ranges and σ=0.005m on odometry. These approximate RPLIDAR A1 and differential drive wheel slip. The node runs independently and publishes on `/scan_noisy` and `/odom_noisy`."
-
-**On navigation failure:** "The integrated pipeline failed because mounting the arm increases the robot's collision footprint. With `robot_radius=0.5m`, Nav2 inflates all obstacles by 0.5m, making the approach corridor too narrow. Navigation in isolation succeeded at 80%. This is a parameter tuning issue, not a fundamental failure."
-
-**On no semantic detection:** "Object location is hardcoded as a map coordinate. The pipeline is designed to accept any (x,y) pose — connecting a YOLOWorld detection node requires only publishing the detected object pose to the topic fetch_coordinator reads."
-
----
-
 *Previous → [Milestone 2 — Navigation & Manipulation](milestone2)*
 
 ---
