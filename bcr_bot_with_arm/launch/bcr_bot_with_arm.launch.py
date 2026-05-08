@@ -44,7 +44,7 @@ def generate_launch_description():
     )
 
     spawn_robot = TimerAction(
-        period=5.0,
+        period=8.0,
         actions=[Node(
             package='ros_gz_sim',
             executable='create',
@@ -87,9 +87,11 @@ def generate_launch_description():
     static_tf = Node(
         package='tf2_ros',
         executable='static_transform_publisher',
-        arguments=['--x', '-16.344', '--y', '-14.035', '--z', '0.0',
-                   '--yaw', '0.0', '--pitch', '0.0', '--roll', '0.0',
-                   '--frame-id', 'map', '--child-frame-id', 'odom'],
+        arguments=[
+            '--x', '0.0', '--y', '0.0', '--z', '0.0',
+            '--yaw', '0.0', '--pitch', '0.0', '--roll', '0.0',
+            '--frame-id', 'map', '--child-frame-id', 'odom'
+        ],
         parameters=[{'use_sim_time': True}]
     )
 

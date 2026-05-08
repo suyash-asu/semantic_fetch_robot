@@ -69,11 +69,11 @@ POSES = {
 
 # Settle times — how long to wait after sending command before next action
 SETTLE_TIME = {
-    "home": 3.0,
-    "pregrasp": 3.5,
-    "grasp": 3.0,
-    "grasp_close": 2.0,
-    "carry": 3.0,
+    'home': 1.5, # 3.0
+    'pregrasp': 2.0, # 3.5
+    'grasp': 1.5, # 3.0
+    'grasp_close': 1.0, # 2.0
+    'carry': 1.5, # 3.0
 }
 
 
@@ -97,8 +97,8 @@ class ArmController(Node):
         self._pub_lf.publish(Float64(data=float(left_finger)))
         self._pub_rf.publish(Float64(data=float(right_finger)))
 
-    def move_to_pose(self, pose_name: str, resend_count: int = 10,
-                     resend_interval: float = 0.4):
+    def move_to_pose(self, pose_name: str, resend_count: int = 5,#10,
+                     resend_interval: float = 0.2):#0.4):
         """
         Move arm to a named pose.
         Resends the command multiple times to overcome PID inertia.

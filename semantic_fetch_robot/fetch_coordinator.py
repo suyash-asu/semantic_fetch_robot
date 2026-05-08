@@ -24,27 +24,23 @@ from action_msgs.msg import GoalStatus
 import time
 from semantic_fetch_robot.arm_controller import ArmController
 
-# ── Mission parameters ────────────────────────────────────────────────────────
-
-# Where the object is in the map frame (set this to your spawned object location)
-# Navigate to a point ~0.5m in front of the object so arm can reach
 OBJECT_APPROACH_POSE = {
-    'x': -10.0,   # adjust to your object's x - 0.5 (robot stops in front)
-    'y': -8.0,    # adjust to your object's y
-    'yaw_w': 1.0, # orientation quaternion w (facing forward)
-    'yaw_z': 0.0,
+    'x': 0.3,
+    'y': -2.5,
+    'yaw_w': 0.707,
+    'yaw_z': -0.707,
 }
 
-# Where "home" is — the operator's location to deliver to
 HOME_POSE = {
-    'x': -16.0,
-    'y': -13.5,
+    'x': -2.4,
+    'y': -2.5,
     'yaw_w': 1.0,
     'yaw_z': 0.0,
 }
 
 # How long to wait for navigation goals (seconds)
-NAV_TIMEOUT = 120.0
+NAV_TIMEOUT = 180.0
+
 
 
 class FetchCoordinator(Node):
