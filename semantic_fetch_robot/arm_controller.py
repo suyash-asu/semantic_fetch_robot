@@ -121,7 +121,7 @@ class ArmController(Node):
             f"Waiting {settle}s for arm to settle...")
         time.sleep(settle)
         self.get_logger().info(f"Pose {pose_name} reached")
-        time.sleep(20)
+        time.sleep(0.5)
         return True
 
     def open_gripper(self):
