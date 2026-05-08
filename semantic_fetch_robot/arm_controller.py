@@ -69,11 +69,11 @@ POSES = {
 
 # Settle times — how long to wait after sending command before next action
 SETTLE_TIME = {
-    'home': 1.5, # 3.0
-    'pregrasp': 2.0, # 3.5
-    'grasp': 1.5, # 3.0
-    'grasp_close': 1.0, # 2.0
-    'carry': 1.5, # 3.0
+    'home': 3.0
+    'pregrasp': 3.5
+    'grasp': 3.0
+    'grasp_close': 2.0
+    'carry': 3.0
 }
 
 
